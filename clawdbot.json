@@ -6,6 +6,7 @@
   },
   "gateway": {
     "port": 18789,
-    "bind": "lan"
+    "bind": "lan",
+    "mode": "local"
   }
 }
