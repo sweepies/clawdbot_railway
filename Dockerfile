@@ -14,6 +14,8 @@ WORKDIR /root
 
 EXPOSE 18789
 
+# Copy default config and startup script
+COPY clawdbot.json /root/clawdbot.json
 COPY start.sh /root/start.sh
 RUN chmod +x /root/start.sh
 
