@@ -10,5 +10,5 @@ if [ ! -f /data/.clawdbot/clawdbot.json ]; then
     cp /root/clawdbot.json /data/.clawdbot/clawdbot.json
 fi
 
-# Start the gateway daemon
-exec clawdbot gateway-daemon --bind lan --port 18789
+# Start the gateway daemon (--allow-unconfigured for non-interactive deployment)
+exec clawdbot gateway-daemon --bind lan --port 18789 --allow-unconfigured
