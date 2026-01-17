@@ -14,6 +14,10 @@ WORKDIR /root
 
 EXPOSE 18789
 
+# Health check for Railway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD clawdbot health || exit 1
+
 # Copy default config and startup script
 COPY clawdbot.json /root/clawdbot.json
 COPY start.sh /root/start.sh
