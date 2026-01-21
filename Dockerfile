@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.5
-FROM node:lts-alpine AS base
+FROM node:lts-slim AS base
 
 RUN corepack enable
 WORKDIR /root
@@ -19,7 +19,7 @@ ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
 ENV MISE_TRUSTED_CONFIG_PATHS=/root
 
-RUN apk add --no-cache git curl bash
+RUN apt update && apt install -y apt-transport-https ca-certificates curl git
 RUN curl https://mise.run | sh
 
 COPY --from=deps /root/node_modules node_modules
