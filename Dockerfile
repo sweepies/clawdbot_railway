@@ -1,12 +1,25 @@
-FROM node:lts-alpine
+# syntax=docker/dockerfile:1.5
+FROM node:lts-alpine AS base
 
-RUN apk add --no-cache git
 RUN corepack enable
 
 WORKDIR /root
 
+# pnpm store cached across rebuilds with BuildKit
+FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
+    pnpm install --prod --frozen-lockfile --store-dir /root/.pnpm-store
+
+FROM base AS runtime
+
+RUN apk add --no-cache git
+
+RUN curl https://mise.run | sh
+
+COPY --from=deps /root/node_modules /root/node_modules
+
+COPY .bashrc /root/.bashrc
 
 # Set environment for persistent storage
 ENV CLAWDBOT_STATE_DIR=/data/.clawdbot

@@ -6,3 +6,6 @@ dockerfilePath = "Dockerfile"
 startCommand = "/root/start.sh"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPath = "/"
+healthcheckTimeout = 30
+
