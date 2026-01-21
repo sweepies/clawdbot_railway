@@ -141,7 +141,7 @@ Then encrypt and commit to persist it:
 
 ```bash
 mise run encrypt-config
-git add clawdbot.json.age
+git add clawdbot.json.enc
 git commit -m "Configure my bot"
 git push
 ```
@@ -196,7 +196,7 @@ Your configuration contains sensitive data and is stored encrypted in git:
 | File | Purpose | Committed to Git |
 |------|---------|------------------|
 | `clawdbot.json` | Plaintext config (your working copy) | No (gitignored) |
-| `clawdbot.json.age` | Encrypted config | Yes |
+| `clawdbot.json.enc` | Encrypted config | Yes |
 | `clawdbot.example.json` | Example/template config | Yes |
 
 **Local workflow:**
@@ -208,7 +208,7 @@ nano clawdbot.json
 mise run encrypt-config
 
 # Commit the encrypted version
-git add clawdbot.json.age
+git add clawdbot.json.enc
 git commit -m "Update bot configuration"
 git push
 ```
@@ -227,7 +227,7 @@ Since configuration is overwritten on every deploy, you have two options for per
 3. Encrypt and commit to your repository:
    ```bash
    mise run encrypt-config
-   git add clawdbot.json.age
+   git add clawdbot.json.enc
    git commit -m "Update bot configuration"
    git push
    ```
@@ -308,7 +308,7 @@ clawdbot channels logs telegram
 
 1. Edit `clawdbot.json` locally
 2. Encrypt: `mise run encrypt-config`
-3. Commit and push: `git add clawdbot.json.age && git commit -m "Update config" && git push`
+3. Commit and push: `git add clawdbot.json.enc && git commit -m "Update config" && git push`
 4. Railway will automatically redeploy (if auto-deploy is enabled)
 
 ### Updating Clawdbot Version
@@ -321,7 +321,7 @@ See [Automatic Updates](#automatic-updates) for details on how Clawdbot stays up
 ┌─────────────────────────────────────────────────────────────┐
 │                    Your GitHub Repo                          │
 │  ┌───────────────────┐                                      │
-│  │ clawdbot.json.age │  ← Encrypted source of truth         │
+│  │ clawdbot.json.enc │  ← Encrypted source of truth         │
 │  └───────────────────┘                                      │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -350,7 +350,7 @@ See [Automatic Updates](#automatic-updates) for details on how Clawdbot stays up
 
 - Verify `AGE_KEY` is set correctly in Railway Variables
 - Ensure the key is the full secret key string starting with `AGE-SECRET-KEY-`
-- Check that `clawdbot.json.age` was encrypted with the matching public key
+- Check that `clawdbot.json.enc` was encrypted with the matching public key
 
 ### Configuration changes not persisting
 
