@@ -3,12 +3,11 @@
 A git-managed deployment template for [Clawdbot](https://github.com/clawdbot/clawdbot) on Railway. Clawdbot is an AI assistant platform supporting WhatsApp, Telegram, Discord, and other messaging channels.
 
 ## Prerequisites
-
-This deployment method is intended for **advanced users** who are comfortable with:
-
-- Command-line tools and Git workflows
-- Managing encryption keys
-- Railway deployment configuration
+> [!IMPORTANT]
+> This deployment method is intended for **advanced users** who are comfortable with:
+> - Command-line tools and Git workflows
+> - Managing encryption keys
+> - Railway deployment configuration
 
 ### Required Tools
 
