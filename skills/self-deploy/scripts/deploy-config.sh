@@ -11,7 +11,8 @@ SOURCE_CONFIG="${SOURCE_CONFIG:-$REPO_DIR/clawdbot.json}"
 TARGET_CONFIG="$REPO_DIR/clawdbot.json"
 
 # Get commit message from args or use default
-COMMIT_MSG="${1:-Update bot configuration}"
+# Prepend [skip ci] to prevent auto-redeploy - human must trigger redeploy
+COMMIT_MSG="[skip ci] ${1:-Update bot configuration}"
 
 echo "🔄 Starting self-deploy..."
 
@@ -47,8 +48,12 @@ echo "📝 Committing changes..."
 git add clawdbot.json.enc
 git commit -m "$COMMIT_MSG"
 
-# Push to trigger redeploy
-echo "🚀 Pushing to trigger Railway redeploy..."
+# Push changes (with [skip ci] - human must trigger redeploy)
+echo "🚀 Pushing changes..."
 git push origin main
 
-echo "✅ Done! Railway should auto-redeploy shortly."
+echo ""
+echo "✅ Config saved to repository!"
+echo ""
+echo "IMPORTANT: This commit has [skip ci] to prevent auto-redeploy."
+echo "Review the changes and trigger redeploy manually when ready."

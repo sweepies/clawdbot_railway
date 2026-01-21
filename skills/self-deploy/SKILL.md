@@ -18,8 +18,18 @@ Trigger this skill when:
 
 1. **Copy config** from the agent's config location to the repo root as `clawdbot.json`
 2. **Encrypt config** using `mise run encrypt-config`
-3. **Commit changes** with descriptive message
-4. **Push** to trigger Railway auto-deploy
+3. **Commit changes** with `[skip ci]` prefix (prevents auto-redeploy)
+4. **Push** changes to repository
+5. **Inform user** that manual redeploy is needed
+
+### Important: `[skip ci]` Commits
+
+All commits made by this skill include `[skip ci]` to prevent automatic Railway redeployment. After the skill commits and pushes:
+
+- **Tell the user**: "Config saved! Review the changes and run `git push` or trigger redeploy manually."
+- The human must decide when to redeploy (prevents unintended deploys)
+
+This ensures the human stays in control of deployment timing.
 
 ## Manual Trigger
 
