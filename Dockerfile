@@ -11,7 +11,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime
 
-RUN apk add --no-cache git curl
+RUN apk add --no-cache git curl bash
 RUN curl https://mise.run | sh
 COPY --from=deps /root/node_modules /root/node_modules
 COPY .bashrc /root/.bashrc
