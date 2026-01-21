@@ -4,6 +4,7 @@ set -euo pipefail
 # Ensure directories exist (volume may be empty on first deploy)
 mkdir -p /data/.clawdbot /data/clawd
 
+eval "$(~/.local/bin/mise activate bash)"
 mise run decrypt-config
 mv clawdbot.json /data/.clawdbot/clawdbot.json
 
