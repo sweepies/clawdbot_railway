@@ -1,10 +1,10 @@
-# Self-Deploy Skill Reference
+# Self-Configuration Skill Reference
 
-This document describes the self-deploy skill that enables clawdbot to manage its own deployment.
+This document describes the self-configuration skill that enables clawdbot to manage its own configuration.
 
 ## Overview
 
-The self-deploy skill allows clawdbot to:
+The self-configuration skill allows clawdbot to:
 1. Detect when its configuration has been modified
 2. Automatically persist changes back to the git repository
 3. Trigger Railway redeployment via git push

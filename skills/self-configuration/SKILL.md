@@ -1,6 +1,6 @@
 ---
-name: self-deploy
-description: Auto-deploy when modifying my own configuration. Copies current config to repo, encrypts it, and pushes to trigger Railway redeployment.
+name: self-configuration
+description: Auto-save when modifying my own configuration. Copies config to repo, encrypts it, and commits with [skip ci] so human can review and trigger deploy manually.
 ---
 
 # Self-Deploy Skill

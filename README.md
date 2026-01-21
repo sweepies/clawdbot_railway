@@ -237,6 +237,24 @@ Since configuration is overwritten on every deploy, you have two options for per
 
 Configure your Clawdbot agent with permissions to commit configuration changes back to your repository. This allows the bot to persist its own configuration updates automatically.
 
+### Self-Configuration Skill
+
+This repository includes a **self-configuration skill** (`skills/self-configuration/`) that enables the agent to save its configuration back to the repository:
+
+1. **Copy config**: The agent copies its current config to the repo root
+2. **Encrypt**: Config is encrypted using `mise run encrypt-config`
+3. **Commit**: Changes are committed with `[skip ci]` prefix
+4. **Push**: Changes are pushed to the repository
+
+The `[skip ci]` prefix prevents automatic Railway redeployment, ensuring the human stays in control of deployment timing. After the agent saves config, it will inform you to review changes and trigger deploy manually.
+
+To enable this skill, install it in your agent's workspace:
+```bash
+cp -r skills/self-configuration /path/to/your/agent/workspace/skills/
+```
+
+When the agent detects configuration changes, it will automatically run the self-configuration workflow and prompt you to deploy when ready.
+
 ## Environment Variables
 
 Configure these in your Railway dashboard under **Variables**:
