@@ -40,10 +40,9 @@ if [ ! -f "clawdbot.json.enc" ]; then
     exit 1
 fi
 
-# Stage and commit
+# Stage and commit (only encrypted config - plaintext is gitignored)
 echo "📝 Committing changes..."
 git add clawdbot.json.enc
-git add clawdbot.json  # tracked in gitignore but we stage explicitly
 git commit -m "$COMMIT_MSG"
 
 # Push to trigger redeploy
