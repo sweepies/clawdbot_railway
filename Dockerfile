@@ -16,10 +16,10 @@ RUN curl https://mise.run | sh
 COPY --from=deps /root/node_modules /root/node_modules
 COPY .bashrc /root/.bashrc
 
-# Set environment for persistent storage
 ENV CLAWDBOT_STATE_DIR=/data/.clawdbot
 ENV HOME=/root
 ENV PATH="/root/node_modules/.bin:$PATH"
+ENV SHELL=/bin/bash
 
 EXPOSE 18789
 
