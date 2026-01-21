@@ -12,5 +12,5 @@ tools = { age = "latest" }
 run = [
   "test -f clawdbot.json.enc || (echo 'Error: clawdbot.json.enc not found' && exit 1)",
   "test -n \"$AGE_KEY\" || (echo 'Error: AGE_KEY environment variable not set' && exit 1)",
-  "age --decrypt --identity \"$AGE_KEY\" --output clawdbot.json clawdbot.json.enc"
+  "echo $AGE_KEY | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc"
 ]
