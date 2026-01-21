@@ -32,7 +32,8 @@ This repository serves as the **source of truth** for your Clawdbot configuratio
 4. At startup, the config is decrypted using the secret key stored in Railway
 5. On each redeploy, the Clawdbot configuration is overwritten to match your repository
 
-> **Important:** Any changes made to the running `clawdbot.json` (via the web UI, SSH, or other means) will be **overwritten on the next deploy**. To persist configuration changes, you must commit them to your forked repository.
+> [!WARNING]
+> Any changes made to the running `clawdbot.json` (via the web UI, SSH, or other means) will be **overwritten on the next deploy**. To persist configuration changes, you must commit them to your forked repository.
 
 ### Automatic Updates
 
@@ -280,8 +281,8 @@ The volume at `/data` persists across deploys and stores runtime data:
 ### Workspace Tooling
 
 This deployment comes with mise configured to trust all agent workspace directories. This means users or agents can add a `mise.toml` file to any workspace to manage tools and environment variables available in that workspace.
-
-> **Security Note:** Trusting workspace directories means an agent with filesystem write access can create mise configs with hooks that execute arbitrary shell commands. If your security model relies on granting filesystem access while denying shell execution, be aware that mise hooks can bypass this restriction. Consider removing `MISE_TRUSTED_CONFIG_PATHS` from the Dockerfile if this is a concern.
+> [!WARNING]
+> Trusting workspace directories means an agent with filesystem write access can create mise configs with hooks that execute arbitrary shell commands. If your security model relies on granting filesystem access while denying shell execution, be aware that mise hooks can bypass this restriction. Consider removing `MISE_TRUSTED_CONFIG_PATHS` from the Dockerfile if this is a concern.
 
 ## Common Tasks
 
