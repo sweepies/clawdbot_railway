@@ -1,100 +1,293 @@
-# Clawdbot Railway Template
+# Clawdbot Railway Deployment
 
-One-click deployment template for [Clawdbot](https://github.com/clawdbot/clawdbot) on Railway. Clawdbot is an AI assistant platform supporting WhatsApp, Telegram, Discord, and other messaging channels.
+A git-managed deployment template for [Clawdbot](https://github.com/clawdbot/clawdbot) on Railway. Clawdbot is an AI assistant platform supporting WhatsApp, Telegram, Discord, and other messaging channels.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/mpxXJp?referralCode=igaHaH&utm_medium=integration&utm_source=template&utm_campaign=generic)
+## Prerequisites
+
+This deployment method is intended for **advanced users** who are comfortable with:
+
+- Command-line tools and Git workflows
+- Managing encryption keys
+- Railway deployment configuration
+
+### Required Tools
+
+Install these tools before proceeding:
+
+| Tool | Purpose | Installation |
+|------|---------|--------------|
+| [mise](https://mise.jdx.dev) | Task runner and tool manager | `curl https://mise.run \| sh` |
+| [age](https://github.com/FiloSottile/age) | Config file encryption | `mise use -g age` |
+| [Railway CLI](https://docs.railway.com/guides/cli) | Deployment and SSH access | `mise use -g railway` |
+
+## How It Works
+
+This repository serves as the **source of truth** for your Clawdbot configuration. Your configuration is stored **encrypted** in the repository and decrypted at runtime.
+
+**Deployment flow:**
+
+1. You edit `clawdbot.json` locally and encrypt it
+2. You commit `clawdbot.json.enc` to your repository
+3. Railway builds and deploys the Docker image
+4. At startup, the config is decrypted using the secret key stored in Railway
+5. On each redeploy, the Clawdbot configuration is overwritten to match your repository
+
+> **Important:** Any changes made to the running `clawdbot.json` (via the web UI, SSH, or other means) will be **overwritten on the next deploy**. To persist configuration changes, you must commit them to your forked repository.
+
+### Automatic Updates
+
+This repository includes Dependabot and a GitHub Actions workflow that automatically keeps Clawdbot up to date:
+
+1. Dependabot opens PRs when new Clawdbot versions are released
+2. The auto-merge workflow (`.github/workflows/dependabot-auto-merge.yml`) merges these PRs after CI passes
+3. Railway automatically redeploys when the PR is merged (if auto-deploy is enabled)
+
+To disable automatic updates and review them manually, delete or disable the auto-merge workflow in your fork.
 
 ## Quick Start
 
-### 1. Deploy the Template
+### 1. Fork This Repository
 
-1. Click the **Deploy on Railway** button above
-2. Fill in the environment variables:
-   - **AI Provider** (at least one required):
-     - `ANTHROPIC_API_KEY` - for Claude models
-     - `OPENAI_API_KEY` - for OpenAI models
-     - `OPENROUTER_API_KEY` - for OpenRouter models
-   - **Channels** (optional - add the ones you want):
-     - `TELEGRAM_BOT_TOKEN` - from [@BotFather](https://t.me/BotFather)
-     - `DISCORD_BOT_TOKEN` - from [Discord Developer Portal](https://discord.com/developers/applications)
-   - `CLAWDBOT_GATEWAY_PASSWORD` is auto-generated for you
-3. Click **Deploy**
+1. Click **Fork** on GitHub to create your own copy
+2. Clone your fork locally:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/clawdbot_railway.git
+   cd clawdbot_railway
+   ```
 
-### 2. Add a Volume (Required)
+### 2. Generate Your Age Key
 
-Railway containers lose their filesystem on each deploy. You must attach a volume:
+Generate a new age key pair for encrypting your configuration:
 
-1. After deployment, go to your service in the Railway dashboard
-2. Right-click the service → **Attach Volume**
-3. Set **Mount Path** to `/data`
-4. Click **Add** then **Redeploy** the service
+```bash
+age-keygen -o age-key.txt
+```
 
-### 3. Enable Public Networking
+This creates a file containing both your secret key and public key:
+
+```
+# created: 2024-01-01T00:00:00Z
+# public key: age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+**Keep `age-key.txt` secure and never commit it to git.** You'll need both keys:
+- **Public key** (`age1...`): Goes in `.env.public` for encryption
+- **Secret key** (`AGE-SECRET-KEY-...`): Goes in Railway as `AGE_KEY` environment variable
+
+### 3. Configure Encryption
+
+Update `.env.public` with your public key:
+
+```
+AGE_RECIPIENT=your-public-key-here
+```
+
+### 4. Initial Deploy
+
+Commit your encryption configuration and deploy:
+
+```bash
+git add .env.public
+git commit -m "Configure encryption"
+git push
+```
+
+Now deploy to Railway:
+
+1. Go to [Railway](https://railway.app) and create a new project
+2. Select **Deploy from GitHub repo**
+3. Connect your forked repository
+4. Add your environment variables (see [Environment Variables](#environment-variables))
+5. Click **Deploy**
+6. Link the project locally for CLI access:
+   ```bash
+   railway link
+   ```
+
+### 5. Add a Volume (Required)
+
+Railway containers lose their filesystem on each deploy. Attach a volume for persistent data:
+
+1. In Railway dashboard, right-click your service → **Attach Volume**
+2. Set **Mount Path** to `/data`
+3. Click **Add** then **Redeploy**
+
+### 6. Enable Public Networking
 
 1. Go to **Settings** → **Networking**
 2. Click **Generate Domain**
 3. Your gateway will be available at `https://your-app.railway.app`
 
-### 4. Access the Web UI
+### 7. Configure Your Bot
 
-Open your gateway URL with your password to access the Control UI:
+Run the interactive configurator via SSH:
 
-```
-https://your-app.railway.app?token=YOUR_GATEWAY_PASSWORD
-```
-
-The Control UI provides:
-- Chat interface
-- Configuration management
-- Session monitoring
-- Channel status
-
-### 5. Test Your Bot
-
-If you configured Telegram or Discord tokens, your bot is already live. Send it a message to test.
-
-**First-time Telegram DM:** You'll receive a pairing code. Approve it via SSH:
 ```bash
-railway ssh
-clawdbot pairing approve telegram <CODE>
+railway ssh -- clawdbot configure
 ```
+
+This walks you through setting up agents, channels, and other options interactively.
+
+### 8. Save Your Configuration
+
+After configuring, copy the config back to your local machine:
+
+```bash
+railway ssh -- cat /data/.clawdbot/clawdbot.json > clawdbot.json
+```
+
+Then encrypt and commit to persist it:
+
+```bash
+mise run encrypt-config
+git add clawdbot.json.age
+git commit -m "Configure my bot"
+git push
+```
+
+The plaintext `clawdbot.json` is gitignored and will not be committed.
+
+### 9. Access the Web UI
+
+1. Connect to your instance via SSH and run the dashboard command:
+   ```bash
+   railway ssh -- clawdbot dashboard
+   ```
+
+2. Copy the token from the URL it displays (the value after `?token=`)
+
+3. Open your Railway deployment's public URL in your browser
+
+4. Go to **Overview** → **Gateway Access** and enter the token
+
+5. Click **Connect**
+
+The token will be saved in your browser storage, allowing continued access to the web UI.
+
+## Configuration
+
+### The `clawdbot.json` File
+
+Your `clawdbot.json` is the heart of your bot's configuration. This file defines:
+
+- Agent settings and personalities
+- Model preferences
+- Channel configurations
+- Custom behaviors
+
+**Example:**
+```json
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/data/clawd",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514"
+    }
+  }
+}
+```
+
+### Encryption Workflow
+
+Your configuration contains sensitive data and is stored encrypted in git:
+
+| File | Purpose | Committed to Git |
+|------|---------|------------------|
+| `clawdbot.json` | Plaintext config (your working copy) | No (gitignored) |
+| `clawdbot.json.age` | Encrypted config | Yes |
+| `clawdbot.example.json` | Example/template config | Yes |
+
+**Local workflow:**
+```bash
+# Edit your config
+nano clawdbot.json
+
+# Encrypt before committing
+mise run encrypt-config
+
+# Commit the encrypted version
+git add clawdbot.json.age
+git commit -m "Update bot configuration"
+git push
+```
+
+**Decryption at runtime:**
+The `start.sh` script automatically decrypts the config using the `AGE_KEY` environment variable before starting Clawdbot.
+
+### Persisting Configuration Changes
+
+Since configuration is overwritten on every deploy, you have two options for persisting changes:
+
+#### Option 1: Manual Updates
+
+1. Make changes via web UI or SSH
+2. Export or copy the updated configuration
+3. Encrypt and commit to your repository:
+   ```bash
+   mise run encrypt-config
+   git add clawdbot.json.age
+   git commit -m "Update bot configuration"
+   git push
+   ```
+
+#### Option 2: Agent-Managed Updates
+
+Configure your Clawdbot agent with permissions to commit configuration changes back to your repository. This allows the bot to persist its own configuration updates automatically.
 
 ## Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `CLAWDBOT_GATEWAY_PASSWORD` | Auto | *(generated)* | Gateway authentication (auto-generated) |
-| `ANTHROPIC_API_KEY` | No* | - | API key for Claude models |
-| `OPENAI_API_KEY` | No* | - | API key for OpenAI models |
-| `OPENROUTER_API_KEY` | No* | - | API key for OpenRouter models |
-| `TELEGRAM_BOT_TOKEN` | No | - | Telegram bot token from @BotFather |
-| `DISCORD_BOT_TOKEN` | No | - | Discord bot token |
-| `CLAWDBOT_STATE_DIR` | Auto | `/data/.clawdbot` | Config storage (set by Dockerfile) |
+Configure these in your Railway dashboard under **Variables**:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AGE_KEY` | **Yes** | Your age secret key (the full `AGE-SECRET-KEY-...` string) for decrypting config |
+| `ANTHROPIC_API_KEY` | No* | API key for Claude models |
+| `OPENAI_API_KEY` | No* | API key for OpenAI models |
+| `OPENROUTER_API_KEY` | No* | API key for OpenRouter models |
+| `TELEGRAM_BOT_TOKEN` | No | Telegram bot token from [@BotFather](https://t.me/BotFather) |
+| `DISCORD_BOT_TOKEN` | No | Discord bot token |
 
 > *At least one AI provider API key is required
 
+### Configuring AGE_KEY
+
+The `AGE_KEY` environment variable must contain your age secret key. This cannot be set via the Railway CLI—you must configure it in the Railway dashboard:
+
+1. Go to your service in the Railway dashboard
+2. Click **Variables**
+3. Add a new variable:
+   - **Name:** `AGE_KEY`
+   - **Value:** Your full secret key (e.g., `AGE-SECRET-KEY-1XXXXXX...`)
+4. Click **Add** then **Redeploy**
+
 ## Volume Storage
 
-The volume at `/data` persists across deploys:
+The volume at `/data` persists across deploys and stores runtime data:
 
 ```
 /data/
-├── .clawdbot/          # Clawdbot configuration
-│   ├── clawdbot.json   # Main config file
-│   ├── credentials/    # Channel credentials (Telegram tokens, etc.)
+├── .clawdbot/
+│   ├── clawdbot.json   # Decrypted config (restored on each deploy)
+│   ├── credentials/    # Channel credentials (Telegram sessions, etc.)
 │   └── agents/         # Agent state and auth profiles
 └── clawd/              # Workspace
     ├── skills/         # Custom skills
     └── memory/         # Conversation memory
 ```
 
+### Workspace Tooling
+
+This deployment comes with mise configured to trust all agent workspace directories. This means users or agents can add a `mise.toml` file to any workspace to manage tools and environment variables available in that workspace.
+
+> **Security Note:** Trusting workspace directories means an agent with filesystem write access can create mise configs with hooks that execute arbitrary shell commands. If your security model relies on granting filesystem access while denying shell execution, be aware that mise hooks can bypass this restriction. Consider removing `MISE_TRUSTED_CONFIG_PATHS` from the Dockerfile if this is a concern.
+
 ## Common Tasks
 
 ### Adding a New Channel
 
-**Telegram/Discord:** Add via environment variables in Railway dashboard, then redeploy:
-- `TELEGRAM_BOT_TOKEN`
-- `DISCORD_BOT_TOKEN`
+**Telegram/Discord:** Add tokens via Railway environment variables, then redeploy.
 
 **WhatsApp** (requires SSH for QR scan):
 ```bash
@@ -103,119 +296,93 @@ clawdbot channels add whatsapp
 # Scan the QR code with your phone
 ```
 
-**Other channels** (Slack, Signal, Teams, etc.):
-```bash
-railway ssh
-clawdbot onboard
-```
-
 ### Checking Channel Status
 
 ```bash
 railway ssh
-
-# Inside container:
 clawdbot channels status
 clawdbot channels logs telegram
 ```
 
-### Creating/Managing Agents
+### Updating Your Bot Configuration
 
-```bash
-railway ssh
+1. Edit `clawdbot.json` locally
+2. Encrypt: `mise run encrypt-config`
+3. Commit and push: `git add clawdbot.json.age && git commit -m "Update config" && git push`
+4. Railway will automatically redeploy (if auto-deploy is enabled)
 
-# Inside container:
-clawdbot agents list
-clawdbot agents create my-agent
-clawdbot agents config my-agent --provider anthropic --model claude-sonnet-4-20250514
-```
+### Updating Clawdbot Version
 
-### Viewing Logs
-
-From Railway dashboard:
-- Click **Deployments** → select deployment → **View Logs**
-
-Or via CLI:
-```bash
-railway logs
-```
+See [Automatic Updates](#automatic-updates) for details on how Clawdbot stays up to date.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Railway Container                     │
-├─────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐    ┌────────────────────────────┐  │
-│  │  Clawdbot CLI   │───▶│     Gateway (port 18789)   │  │
-│  └─────────────────┘    └────────────────────────────┘  │
-│           │                          │                   │
-│           ▼                          ▼                   │
-│  ┌─────────────────────────────────────────────────────┐│
-│  │              Volume mounted at /data                ││
-│  │  ┌──────────────────┐  ┌────────────────────────┐  ││
-│  │  │  /data/.clawdbot │  │     /data/clawd        │  ││
-│  │  │  (config/state)  │  │     (workspace)        │  ││
-│  │  └──────────────────┘  └────────────────────────┘  ││
-│  └─────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Your GitHub Repo                          │
+│  ┌───────────────────┐                                      │
+│  │ clawdbot.json.age │  ← Encrypted source of truth         │
+│  └───────────────────┘                                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ (deploy)
+┌─────────────────────────────────────────────────────────────┐
+│                    Railway Container                         │
+├─────────────────────────────────────────────────────────────┤
+│  start.sh: mise run decrypt-config (using AGE_KEY)          │
+│                              │                               │
+│                              ▼                               │
+│  ┌─────────────────┐    ┌────────────────────────────────┐  │
+│  │  Clawdbot CLI   │───▶│     Gateway (port 18789)       │  │
+│  └─────────────────┘    └────────────────────────────────┘  │
+│           │                          │                       │
+│           ▼                          ▼                       │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              Volume mounted at /data                    ││
+│  │         (credentials, agent state, workspace)           ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Troubleshooting
 
+### Decryption fails at startup
+
+- Verify `AGE_KEY` is set correctly in Railway Variables
+- Ensure the key is the full secret key string starting with `AGE-SECRET-KEY-`
+- Check that `clawdbot.json.age` was encrypted with the matching public key
+
+### Configuration changes not persisting
+
+This is expected behavior. Changes made at runtime are overwritten on redeploy. Encrypt and commit your changes to your repository to persist them.
+
 ### Gateway won't start
 
-**Check logs for errors:**
-- Railway dashboard → **Deployments** → **View Logs**
-
-**Common causes:**
-- Missing volume mount at `/data`
-- No AI provider API key configured
-
-### State not persisting between deploys
-
-1. Verify volume exists: **Settings** → **Volumes**
-2. Confirm mount path is exactly `/data`
-3. Check volume has available space
-
-### SSH connection fails
-
-1. Ensure the service is running (not crashed)
-2. Verify you're logged in: `railway login`
-3. Link your project: `railway link`
+- Check logs in Railway dashboard → **Deployments** → **View Logs**
+- Verify volume is mounted at `/data`
+- Ensure at least one AI provider API key is configured
+- Verify `AGE_KEY` is configured correctly
 
 ### Channel not responding
 
 ```bash
 railway ssh
-
-# Check status
 clawdbot channels status
-
-# View channel logs
 clawdbot channels logs telegram
 ```
 
-### Health check failing
+### SSH connection fails
 
-1. Check deployment logs for startup errors
-2. Verify port 18789 is exposed
-3. Increase `healthcheckTimeout` in `railway.toml` if needed
-
-## Updating Clawdbot
-
-To update to the latest version:
-
-1. Dependabot will open a PR updating `package.json` and `pnpm-lock.yaml`
-2. Merge the PR
-3. Railway dashboard → **Deployments** → **Redeploy** (or rely on your CI/CD)
-
-The Dockerfile installs Clawdbot from the pinned version in `package.json`.
+1. Ensure the service is running
+2. Verify you're logged in: `railway login`
+3. Link your project: `railway link`
 
 ## Resources
 
 - [Clawdbot Documentation](https://docs.clawd.bot)
 - [Clawdbot GitHub](https://github.com/clawdbot/clawdbot)
+- [age Encryption](https://github.com/FiloSottile/age)
+- [mise Documentation](https://mise.jdx.dev)
 - [Railway Documentation](https://docs.railway.app)
 - [Railway CLI Guide](https://docs.railway.com/guides/cli)
 

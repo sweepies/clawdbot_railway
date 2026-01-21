@@ -11,15 +11,22 @@ RUN pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime
 
-RUN apk add --no-cache git curl bash
-RUN curl https://mise.run | sh
-COPY --from=deps /root/node_modules /root/node_modules
-COPY .bashrc /root/.bashrc
+WORKDIR /root
 
 ENV CLAWDBOT_STATE_DIR=/data/.clawdbot
 ENV HOME=/root
 ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
+ENV MISE_TRUSTED_CONFIG_PATHS=/root
+
+RUN apk add --no-cache git curl bash
+RUN curl https://mise.run | sh
+
+COPY --from=deps /root/node_modules node_modules
+COPY .bashrc .bashrc
+COPY clawdbot.json.age clawdbot.json.age
+COPY start.sh start.sh
+RUN chmod +x /root/start.sh
 
 EXPOSE 18789
 
@@ -27,9 +34,4 @@ EXPOSE 18789
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD clawdbot health || exit 1
 
-# Copy default config and startup script
-COPY clawdbot.json /root/clawdbot.json
-COPY start.sh /root/start.sh
-RUN chmod +x /root/start.sh
-
-CMD ["/root/start.sh"]
+CMD ["start.sh"]

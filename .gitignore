@@ -1,11 +1,2 @@
-# Claude Code
-.claude/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor files
-*.swp
-*.swo
-*~
+clawdbot.json
+age-key.txt

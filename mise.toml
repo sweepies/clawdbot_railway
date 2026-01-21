@@ -1,0 +1,16 @@
+[env]
+'_'.file = { path = ".env.public" }
+
+[tasks.encrypt-config]
+description = "Encrypt the config file"
+tools = { age = "latest" }
+run = "age --encrypt --recipient $AGE_RECIPIENT --armor --output clawdbot.json.enc clawdbot.json"
+
+[tasks.decrypt-config]
+description = "Decrypt the config file"
+tools = { age = "latest" }
+run = [
+  "test -f clawdbot.json.enc || (echo 'Error: clawdbot.json.enc not found' && exit 1)",
+  "test -n \"$AGE_KEY\" || (echo 'Error: AGE_KEY environment variable not set' && exit 1)",
+  "age --decrypt --identity \"$AGE_KEY\" --output clawdbot.json clawdbot.json.enc"
+]
