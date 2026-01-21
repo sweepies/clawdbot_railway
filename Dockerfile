@@ -1,15 +1,17 @@
 FROM node:lts-alpine
 
 RUN apk add --no-cache git
+RUN corepack enable
 
-# Install clawdbot globally
-RUN pnpm install -g clawdbot@latest
+WORKDIR /root
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Set environment for persistent storage
 ENV CLAWDBOT_STATE_DIR=/data/.clawdbot
 ENV HOME=/root
-
-WORKDIR /root
+ENV PATH="/root/node_modules/.bin:$PATH"
 
 EXPOSE 18789
 

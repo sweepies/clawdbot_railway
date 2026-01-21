@@ -206,9 +206,11 @@ clawdbot channels logs telegram
 
 To update to the latest version:
 
-1. Railway dashboard → **Deployments** → **Redeploy**
+1. Dependabot will open a PR updating `package.json` and `pnpm-lock.yaml`
+2. Merge the PR
+3. Railway dashboard → **Deployments** → **Redeploy** (or rely on your CI/CD)
 
-The Dockerfile uses `clawdbot@latest`, so each rebuild fetches the newest version.
+The Dockerfile installs Clawdbot from the pinned version in `package.json`.
 
 ## Resources
 
