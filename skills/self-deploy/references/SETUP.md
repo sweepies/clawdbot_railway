@@ -11,9 +11,9 @@ The self-deploy skill allows clawdbot to:
 
 ## Skill Location
 
-The skill is installed in two locations:
-- **Repository**: `/data/miku-private/clawdbot_railway/skills/self-deploy/` (for version control)
-- **Active**: `/data/miku-private/skills/self-deploy/` (for clawdbot to use)
+The skill should be installed in:
+- **Repository**: `<repo>/skills/self-deploy/` (for version control)
+- **Active**: `<agent-workspace>/skills/self-deploy/` (for clawdbot to use)
 
 ## Files
 
@@ -30,12 +30,12 @@ self-deploy/
 
 ### 1. Trigger
 The skill triggers when:
-- Config modifications are detected in `/data/.clawdbot/clawdbot.json`
+- Config modifications are detected
 - User explicitly requests deployment ("save config", "deploy", etc.)
 - Called via the skill system
 
 ### 2. Deployment Process
-1. Copy current config from `/data/.clawdbot/clawdbot.json` to repo root
+1. Copy current config from agent's config location to repo root
 2. Encrypt config using `mise run encrypt-config` (age encryption)
 3. Stage and commit changes with descriptive message
 4. Push to `origin main` to trigger Railway webhook
@@ -53,7 +53,7 @@ The skill monitors for config changes and auto-deploys when detected.
 
 ### Manual
 ```bash
-cd /data/miku-private/clawdbot_railway
+cd /path/to/repo
 ./skills/self-deploy/scripts/deploy-config.sh "Your commit message"
 ```
 
@@ -83,11 +83,12 @@ git config user.email "clawdbot@localhost"
 ## Troubleshooting
 
 ### "Source config not found"
-- Check that `/data/.clawdbot/clawdbot.json` exists
+- Check that your config file exists
 - Ensure clawdbot is running and has created the config
+- Set `SOURCE_CONFIG` environment variable if using non-default location
 
 ### "Repository not found"
-- Verify repo is cloned at `/data/miku-private/clawdbot_railway`
+- Verify repo is cloned and you're running from its root
 - Check that `.git` directory exists
 
 ### "Encryption failed"
@@ -116,7 +117,7 @@ git config user.email "clawdbot@localhost"
 
 To enable automatic deployment:
 
-1. Install the skill in `/data/miku-private/skills/self-deploy/`
+1. Install the skill in `<agent-workspace>/skills/self-deploy/`
 2. Clawdbot will automatically load skills from this directory
 3. When config modifications are detected, the skill triggers
 4. Deployment happens automatically without user intervention
@@ -124,8 +125,8 @@ To enable automatic deployment:
 ## Maintenance
 
 ### Updating the Skill
-1. Edit files in `/data/miku-private/clawdbot_railway/skills/self-deploy/`
-2. Copy changes to `/data/miku-private/skills/self-deploy/`
+1. Edit files in `<repo>/skills/self-deploy/`
+2. Copy changes to `<agent-workspace>/skills/self-deploy/`
 3. Test deployment workflow
 4. Commit to git for version control
 

@@ -2,9 +2,12 @@
 set -e
 
 # Self-deploy script: copies config, encrypts, commits and pushes
+# Usage: ./deploy-config.sh [commit message]
+# Expects: Current working directory is the git repo root
+#          Source config at $SOURCE_CONFIG or ./clawdbot.json (copied from agent's config)
 
-REPO_DIR="/data/miku-private/clawdbot_railway"
-SOURCE_CONFIG="/data/.clawdbot/clawdbot.json"
+REPO_DIR="${PWD}"
+SOURCE_CONFIG="${SOURCE_CONFIG:-$REPO_DIR/clawdbot.json}"
 TARGET_CONFIG="$REPO_DIR/clawdbot.json"
 
 # Get commit message from args or use default
@@ -15,16 +18,15 @@ echo "🔄 Starting self-deploy..."
 # Check if source config exists
 if [ ! -f "$SOURCE_CONFIG" ]; then
     echo "❌ Error: Source config not found at $SOURCE_CONFIG"
+    echo "Make sure to copy your config to this location first"
     exit 1
 fi
 
 # Check if repo is set up
 if [ ! -d "$REPO_DIR/.git" ]; then
-    echo "❌ Error: Repository not found at $REPO_DIR"
+    echo "❌ Error: Repository not found. Run from git repo root."
     exit 1
 fi
-
-cd "$REPO_DIR"
 
 # Copy config to repo
 echo "📋 Copying config..."
