@@ -24,7 +24,7 @@ RUN curl https://mise.run | sh
 
 COPY --from=deps /root/node_modules node_modules
 COPY .bashrc .bashrc
-COPY clawdbot.json.age clawdbot.json.age
+COPY clawdbot.json.enc clawdbot.json.enc
 COPY start.sh start.sh
 RUN chmod +x /root/start.sh
 
