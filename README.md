@@ -250,7 +250,8 @@ Configure these in your Railway dashboard under **Variables**:
 | `TELEGRAM_BOT_TOKEN` | No | Telegram bot token from [@BotFather](https://t.me/BotFather) |
 | `DISCORD_BOT_TOKEN` | No | Discord bot token |
 
-> *At least one AI provider API key is required
+> [!NOTE]
+> *At least one AI provider API key is required, unless configured in `clawdbot.json`
 
 ### Configuring AGE_KEY
 
