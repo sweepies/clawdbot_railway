@@ -2,23 +2,18 @@
 FROM node:lts-alpine AS base
 
 RUN corepack enable
-
 WORKDIR /root
 
-# pnpm store cached across rebuilds with BuildKit
 FROM base AS deps
+
 COPY package.json pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
-    pnpm install --prod --frozen-lockfile --store-dir /root/.pnpm-store
+RUN pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime
 
 RUN apk add --no-cache git
-
 RUN curl https://mise.run | sh
-
 COPY --from=deps /root/node_modules /root/node_modules
-
 COPY .bashrc /root/.bashrc
 
 # Set environment for persistent storage
