@@ -23,6 +23,7 @@ RUN install -dm 755 /etc/apt/keyrings && \
     curl -fSs https://mise.jdx.dev/gpg-key.pub | tee /etc/apt/keyrings/mise-archive-keyring.asc 1> /dev/null && \
     echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.asc] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list && \
     apt update && apt install -y mise
+RUN mise use -g fnox && mise plugin install fnox-env https://github.com/jdx/mise-env-fnox
 
 COPY --from=deps /root/node_modules node_modules
 COPY .bashrc .bashrc

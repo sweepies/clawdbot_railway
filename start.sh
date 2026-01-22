@@ -12,5 +12,11 @@ fi
 echo "$AGE_KEY" | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc
 mv clawdbot.json /data/.clawdbot/clawdbot.json
 
+# Install mise tools in each directory under /data
+for dir in /data/*/; do
+    [ -d "$dir" ] || continue
+    (cd "$dir" && mise install)
+done
+
 # Start the gateway daemon (--allow-unconfigured for non-interactive deployment)
 exec clawdbot gateway-daemon --bind lan --port 18789 --allow-unconfigured
