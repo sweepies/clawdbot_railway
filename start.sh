@@ -12,9 +12,5 @@ fi
 echo "$AGE_KEY" | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc
 mv clawdbot.json /data/.clawdbot/clawdbot.json
 
-eval "$(~/.local/bin/mise activate bash)"
-mise install
-mise plugins install fnox-env https://github.com/jdx/mise-env-fnox
-
 # Start the gateway daemon (--allow-unconfigured for non-interactive deployment)
 exec clawdbot gateway-daemon --bind lan --port 18789 --allow-unconfigured

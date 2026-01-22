@@ -17,17 +17,18 @@ ENV CLAWDBOT_STATE_DIR=/data/.clawdbot
 ENV HOME=/root
 ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
-ENV MISE_TRUSTED_CONFIG_PATHS=/root
 
-RUN apt update && apt install -y apt-transport-https ca-certificates curl git age
+RUN apt update && apt install -y curl git age
+RUN install -dm 755 /etc/apt/keyrings && \
+    curl -fSs https://mise.jdx.dev/gpg-key.pub | sudo tee /etc/apt/keyrings/mise-archive-keyring.asc 1> /dev/null && \
+    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.asc] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list && \
+    apt update && apt install -y mise
 
 COPY --from=deps /root/node_modules node_modules
 COPY .bashrc .bashrc
 COPY clawdbot.json.enc clawdbot.json.enc
-COPY mise.toml mise.toml
 COPY start.sh start.sh
 
-RUN curl https://mise.run | sh
 RUN chmod +x /root/start.sh
 
 EXPOSE 18789
