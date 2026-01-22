@@ -1,0 +1,10 @@
+{
+  "id": "exec-interactive",
+  "name": "Exec Interactive",
+  "description": "Interactive login shell exec tool.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

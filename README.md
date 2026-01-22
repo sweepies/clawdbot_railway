@@ -1,6 +1,6 @@
 # Clawdbot Railway Deployment
 
-A git-managed deployment template for [Clawdbot](https://github.com/clawdbot/clawdbot) on Railway. Clawdbot is an AI assistant platform supporting WhatsApp, Telegram, Discord, and other messaging channels.
+An opinionated git-managed deployment template for [Clawdbot](https://github.com/clawdbot/clawdbot) on Railway. Clawdbot is an AI assistant platform supporting WhatsApp, Telegram, Discord, and other messaging channels.
 
 ## Prerequisites
 > [!IMPORTANT]
@@ -44,6 +44,43 @@ This repository includes Dependabot and a GitHub Actions workflow that automatic
 3. Railway automatically redeploys when the PR is merged (if auto-deploy is enabled)
 
 To disable automatic updates and review them manually, delete or disable the auto-merge workflow in your fork.
+
+### Agent Tooling: mise, fnox, and exec_i
+
+This deployment uses a tooling stack that provides runtime tools and secrets to both you and your agent:
+
+| Component | Purpose |
+|-----------|---------|
+| [mise](https://mise.jdx.dev) | Manages tools (node, python, ripgrep, etc.) and environment variables per-directory |
+| [fnox](https://fnox.jdx.dev) | Manages secrets encrypted to authorized age identities |
+| **exec_i plugin** | Runs shell commands in login/interactive mode so mise and fnox activate |
+
+**The problem:** Clawdbot's default shell tool runs commands in a non-interactive, non-login shell. This means `.bashrc` is never sourced, so mise doesn't activate and fnox secrets aren't loaded. Your agent would have no access to tools or secrets you've configured.
+
+**The solution:** This repo includes the `exec_i` plugin (`.clawdbot/extensions/exec-interactive-plugin/`) which runs commands through `bash -l -i -c <cmd>`. This sources your shell configuration, activating mise and loading fnox secrets.
+
+> [!IMPORTANT]
+> You must instruct your agent to use `exec_i` instead of the default shell tool. Add this to your agent's `AGENTS.md`, and consider denying access to the default shell tools:
+> ```
+> When running shell commands, always use the `exec_i` tool instead of the default shell/bash tool.
+> ```
+```json
+"tools": {
+  "allow": [
+    "group:clawdbot",
+    "exec_i"
+  ],
+  "deny": [
+    "exec",
+    "bash"
+  ]
+}
+```
+
+Without this setup, the agent cannot access:
+- Tools installed via mise (ripgrep, node, python, etc.)
+- Environment variables from workspace `mise.toml` files
+- Secrets loaded via fnox-env
 
 ## Quick Start
 

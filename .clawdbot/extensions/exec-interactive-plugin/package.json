@@ -1,0 +1,14 @@
+{
+  "name": "exec-interactive-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive exec tool plugin for Clawdbot",
+  "clawdbot": {
+    "extensions": ["./index.ts"]
+  },
+  "dependencies": {
+    "@sinclair/typebox": "0.34.47",
+    "clawdbot": "2026.1.16-2"
+  }
+}
