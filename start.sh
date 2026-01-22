@@ -10,7 +10,7 @@ if [ -z "${AGE_KEY:-}" ]; then
     exit 1
 fi
 
-mv extensions /data/.clawdbot/extensions
+mv /root/extensions /data/.clawdbot/extensions
 
 echo "$AGE_KEY" | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc
 mv clawdbot.json /data/.clawdbot/clawdbot.json
