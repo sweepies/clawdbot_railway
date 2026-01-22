@@ -60,21 +60,22 @@ This deployment uses a tooling stack that provides runtime tools and secrets to 
 **The solution:** This repo includes the `exec_i` plugin (`.clawdbot/extensions/exec-interactive-plugin/`) which runs commands through `bash -l -i -c <cmd>`. This sources your shell configuration, activating mise and loading fnox secrets.
 
 > [!IMPORTANT]
-> You must instruct your agent to use `exec_i` instead of the default shell tool. Add this to your agent's `AGENTS.md`, and consider denying access to the default shell tools:
+> You must instruct your agent to use `exec_i` instead of the default shell tool. Add this to your agent's `AGENTS.md`:
 > ```
-> When running shell commands, always use the `exec_i` tool instead of the default shell/bash tool.
+> When running shell commands, always use the `exec_i` tool instead of the default exec/bash tool.
 > ```
-```json
-"tools": {
-  "allow": [
-    "group:clawdbot",
-    "exec_i"
-  ],
-  "deny": [
-    "exec",
-    "bash"
-  ]
-}
+> And consider denying access to the default tools:
+> ```json
+> "tools": {
+>   "allow": [
+>     "group:clawdbot",
+>     "exec_i"
+>   ],
+>   "deny": [
+>     "exec",
+>     "bash"
+>   ]
+> }
 ```
 
 Without this setup, the agent cannot access:
