@@ -3,15 +3,5 @@
     "defaults": {
       "workspace": "/data/clawd"
     }
-  },
-    "plugins": {
-    "load": {
-      "paths": ["/root/extensions"]
-    },
-    "entries": {
-      "exec-interactive": {
-        "enabled": true
-      }
-    }
   }
 }
