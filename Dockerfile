@@ -19,7 +19,7 @@ ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
 ENV MISE_TRUSTED_CONFIG_PATHS=/root
 
-RUN apt update && apt install -y apt-transport-https ca-certificates curl git
+RUN apt update && apt install -y apt-transport-https ca-certificates curl git age
 
 COPY --from=deps /root/node_modules node_modules
 COPY .bashrc .bashrc
