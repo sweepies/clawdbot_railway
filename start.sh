@@ -12,6 +12,9 @@ fi
 echo "$AGE_KEY" | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc
 mv clawdbot.json /data/.clawdbot/clawdbot.json
 
+# Activate mise for agents
+eval "$(mise activate bash)"
+
 # Install mise tools in each directory under /data
 for dir in /data/*/; do
     [ -d "$dir" ] || continue
