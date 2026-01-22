@@ -76,7 +76,7 @@ This deployment uses a tooling stack that provides runtime tools and secrets to 
 >     "bash"
 >   ]
 > }
-```
+> ```
 
 Without this setup, the agent cannot access:
 - Tools installed via mise (ripgrep, node, python, etc.)
