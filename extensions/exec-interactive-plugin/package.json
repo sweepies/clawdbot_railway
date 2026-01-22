@@ -8,6 +8,7 @@
     "extensions": ["./index.ts"]
   },
   "dependencies": {
+    "@lydell/node-pty": "1.0.0",
     "@sinclair/typebox": "0.34.47",
     "clawdbot": "2026.1.16-2"
   }

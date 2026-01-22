@@ -35,3 +35,5 @@ Common locations:
 - This does **not** override the core `exec` tool (plugin tool names cannot clash).
 - The tool is registered as **optional**; if you use a tool allowlist, include
   `exec_i` in it.
+- `@lydell/node-pty` is a native module; ensure your deployment allows native builds
+  (for example, pnpm `allow-build-scripts` + `pnpm rebuild @lydell/node-pty`).
