@@ -28,7 +28,6 @@ COPY mise.toml mise.toml
 COPY start.sh start.sh
 
 RUN curl https://mise.run | sh
-RUN eval "$(~/.local/bin/mise activate bash)" && mise install && mise plugins install fnox-env https://github.com/jdx/mise-env-fnox
 RUN chmod +x /root/start.sh
 
 EXPOSE 18789
