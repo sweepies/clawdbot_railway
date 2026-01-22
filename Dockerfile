@@ -17,6 +17,7 @@ ENV CLAWDBOT_STATE_DIR=/data/.clawdbot
 ENV HOME=/root
 ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
+ENV MISE_TRUSTED_CONFIG_PATHS=/root:/data
 
 RUN apt update && apt install -y curl git age
 RUN install -dm 755 /etc/apt/keyrings && \
