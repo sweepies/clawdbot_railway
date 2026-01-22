@@ -28,9 +28,9 @@ RUN install -dm 755 /etc/apt/keyrings && \
 
 RUN mise use -g fnox && mise plugin install fnox-env https://github.com/jdx/mise-env-fnox && mise settings activate_aggressive=true
 
-COPY --from=deps /root/node_modules .
+COPY --from=deps /root/node_modules /root/node_modules
 COPY .bashrc .
-COPY extensions .
+COPY extensions /root/extensions
 COPY clawdbot.json.enc .
 COPY start.sh .
 
