@@ -19,12 +19,12 @@ ENV PATH="/root/node_modules/.bin:$PATH"
 ENV SHELL=/bin/bash
 ENV MISE_TRUSTED_CONFIG_PATHS=/root:/data
 
-RUN apt update && apt install -y curl git age
+RUN apt-get update && apt-get install -y curl git age
 RUN install -dm 755 /etc/apt/keyrings
 
 RUN curl -fSs https://mise.jdx.dev/gpg-key.pub | tee /etc/apt/keyrings/mise-archive-keyring.asc 1> /dev/null && \
     echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.asc] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list && \
-    apt update && apt install -y mise
+    apt-get update && apt-get install -y mise
 
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
     chmod a+r /etc/apt/keyrings/docker.asc && \
