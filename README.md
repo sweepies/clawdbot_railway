@@ -17,6 +17,7 @@ Install these tools before proceeding:
 |------|---------|--------------|
 | [mise](https://mise.jdx.dev) | Task runner and tool manager | `curl https://mise.run \| sh` |
 | [age](https://github.com/FiloSottile/age) | Config file encryption | `mise use -g age` |
+| [fnox](https://fnox.jdx.dev) | Secrets management | `mise use -g fnox` |
 | [Railway CLI](https://docs.railway.com/guides/cli) | Deployment and SSH access | `mise use -g railway` |
 
 ## How It Works
@@ -55,15 +56,49 @@ To disable automatic updates and review them manually, delete or disable the aut
    cd clawdbot_railway
    ```
 
-### 2. Generate Your Age Key
+### 2. Set Up Age Keys
 
-Generate a new age key pair for encrypting your configuration:
+You need two age identities:
+
+1. **Your personal identity** — used to decrypt fnox secrets locally
+2. **Railway's identity** — used by Railway to decrypt the config at runtime
+
+#### Personal Identity
+
+If you don't already have an age identity, generate one:
+
+```bash
+age-keygen -o ~/.config/age/keys.txt
+```
+
+Add your public key (the `age1...` line) to the `recipients` list in `fnox.toml`.
+
+Alternatively, you can use your existing SSH key. Add your SSH public key directly to `fnox.toml`:
+
+```toml
+recipients = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...",  # from ~/.ssh/id_ed25519.pub
+]
+```
+
+Then tell fnox where to find your private key:
+
+```bash
+export FNOX_AGE_KEY_FILE=~/.ssh/id_ed25519
+```
+
+> [!NOTE]
+> Password-protected SSH keys are not supported. If your key has a passphrase, create a copy without one for use with fnox.
+
+#### Railway Identity
+
+Generate a separate key for Railway:
 
 ```bash
 age-keygen -o age-key.txt
 ```
 
-This creates a file containing both your secret key and public key:
+This creates a file containing both the secret and public key:
 
 ```
 # created: 2024-01-01T00:00:00Z
@@ -71,24 +106,28 @@ This creates a file containing both your secret key and public key:
 AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-**Keep `age-key.txt` secure and never commit it to git.** You'll need both keys:
-- **Public key** (`age1...`): Goes in `.env.public` for encryption
-- **Secret key** (`AGE-SECRET-KEY-...`): Goes in Railway as `AGE_KEY` environment variable
+**Keep `age-key.txt` secure and never commit it to git.** The secret key goes in Railway's `AGE_KEY` environment variable.
 
 ### 3. Configure Encryption
 
-Update `.env.public` with your public key:
+Store your age key in fnox so authorized users can update the config:
 
+```bash
+# Install the mise-env-fnox plugin
+mise plugins install fnox-env https://github.com/jdx/mise-env-fnox
+
+# Store your age key in fnox
+fnox set CONFIG_KEY < age-key.txt
 ```
-AGE_RECIPIENT=your-public-key-here
-```
+
+This stores your Railway decryption key (`CONFIG_KEY`) in `fnox.toml`, encrypted to the recipients listed there. Anyone whose age identity is in the recipients list can then run `mise run encrypt-config` to update the encrypted config—without needing direct access to the Railway key.
 
 ### 4. Initial Deploy
 
-Commit your encryption configuration and deploy:
+Commit your fnox configuration and deploy:
 
 ```bash
-git add .env.public
+git add fnox.toml
 git commit -m "Configure encryption"
 git push
 ```
@@ -198,13 +237,15 @@ Your configuration contains sensitive data and is stored encrypted in git:
 | `clawdbot.json` | Plaintext config (your working copy) | No (gitignored) |
 | `clawdbot.json.enc` | Encrypted config | Yes |
 | `clawdbot.example.json` | Example/template config | Yes |
+| `fnox.toml` | Encryption key (encrypted to authorized users) | Yes |
+| `age-key.txt` | Your local age identity | No (gitignored) |
 
 **Local workflow:**
 ```bash
 # Edit your config
 nano clawdbot.json
 
-# Encrypt before committing
+# Encrypt before committing (uses fnox to get the encryption key)
 mise run encrypt-config
 
 # Commit the encrypted version
@@ -339,16 +380,17 @@ See [Automatic Updates](#automatic-updates) for details on how Clawdbot stays up
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Your GitHub Repo                          │
-│  ┌───────────────────┐                                      │
-│  │ clawdbot.json.enc │  ← Encrypted source of truth         │
-│  └───────────────────┘                                      │
+│  ┌───────────────────┐  ┌────────────┐                      │
+│  │ clawdbot.json.enc │  │ fnox.toml  │                      │
+│  │ (encrypted config)│  │ (key mgmt) │                      │
+│  └───────────────────┘  └────────────┘                      │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼ (deploy)
 ┌─────────────────────────────────────────────────────────────┐
 │                    Railway Container                         │
 ├─────────────────────────────────────────────────────────────┤
-│  start.sh: mise run decrypt-config (using AGE_KEY)          │
+│  start.sh: age --decrypt (using AGE_KEY env var)            │
 │                              │                               │
 │                              ▼                               │
 │  ┌─────────────────┐    ┌────────────────────────────────┐  │
@@ -369,7 +411,14 @@ See [Automatic Updates](#automatic-updates) for details on how Clawdbot stays up
 
 - Verify `AGE_KEY` is set correctly in Railway Variables
 - Ensure the key is the full secret key string starting with `AGE-SECRET-KEY-`
-- Check that `clawdbot.json.enc` was encrypted with the matching public key
+- Check that `clawdbot.json.enc` was encrypted with the key stored in `fnox.toml` (`CONFIG_KEY`)
+
+### Local encryption/decryption fails
+
+- Ensure fnox is configured: `fnox get CONFIG_KEY` should return the Railway age identity
+- If CONFIG_KEY is not set, run: `fnox set CONFIG_KEY < age-key.txt`
+- Verify your personal age identity is listed in the `recipients` in `fnox.toml`
+- Check that your identity exists at `~/.config/age/keys.txt`, or if using SSH keys, set `FNOX_AGE_KEY_FILE=~/.ssh/id_ed25519`
 
 ### Configuration changes not persisting
 
@@ -401,6 +450,7 @@ clawdbot channels logs telegram
 - [Clawdbot Documentation](https://docs.clawd.bot)
 - [Clawdbot GitHub](https://github.com/clawdbot/clawdbot)
 - [age Encryption](https://github.com/FiloSottile/age)
+- [fnox Documentation](https://fnox.jdx.dev)
 - [mise Documentation](https://mise.jdx.dev)
 - [Railway Documentation](https://docs.railway.app)
 - [Railway CLI Guide](https://docs.railway.com/guides/cli)

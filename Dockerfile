@@ -20,13 +20,15 @@ ENV SHELL=/bin/bash
 ENV MISE_TRUSTED_CONFIG_PATHS=/root
 
 RUN apt update && apt install -y apt-transport-https ca-certificates curl git
-RUN curl https://mise.run | sh
 
 COPY --from=deps /root/node_modules node_modules
 COPY .bashrc .bashrc
 COPY clawdbot.json.enc clawdbot.json.enc
 COPY mise.toml mise.toml
 COPY start.sh start.sh
+
+RUN curl https://mise.run | sh
+RUN mise install && mise plugins install fnox-env https://github.com/jdx/mise-env-fnox
 RUN chmod +x /root/start.sh
 
 EXPOSE 18789

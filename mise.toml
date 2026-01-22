@@ -1,16 +1,21 @@
+[plugins]
+fnox-env = "https://github.com/jdx/mise-env-fnox"
+
 [env]
-'_'.file = { path = ".env.public" }
+_.fnox-env = {}
 
 [tasks.encrypt-config]
-description = "Encrypt the config file"
+description = "Encrypt the config file. Requires fnox to be configured."
 tools = { age = "latest" }
-run = "age --encrypt --recipient $AGE_RECIPIENT --armor --output clawdbot.json.enc clawdbot.json"
+run = """
+AGE_RECIPIENT=$(fnox get CONFIG_KEY | age-keygen -y)
+age --encrypt --recipient $AGE_RECIPIENT --armor --output clawdbot.json.enc clawdbot.json
+"""
 
 [tasks.decrypt-config]
-description = "Decrypt the config file"
+description = "Decrypt the config file. Requires fnox to be configured."
 tools = { age = "latest" }
-run = [
-  "test -f clawdbot.json.enc || (echo 'Error: clawdbot.json.enc not found' && exit 1)",
-  "test -n \"$AGE_KEY\" || (echo 'Error: AGE_KEY environment variable not set' && exit 1)",
-  "echo $AGE_KEY | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc"
-]
+run = """
+test -f clawdbot.json.enc || (echo 'Error: clawdbot.json.enc not found' && exit 1)
+fnox get CONFIG_KEY | age --decrypt --identity - --output clawdbot.json clawdbot.json.enc
+"""
