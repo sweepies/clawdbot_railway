@@ -343,6 +343,44 @@ This deployment comes with mise configured to trust all agent workspace director
 > [!WARNING]
 > Trusting workspace directories means an agent with filesystem write access can create mise configs with hooks that execute arbitrary shell commands. If your security model relies on granting filesystem access while denying shell execution, be aware that mise hooks can bypass this restriction. Consider removing `MISE_TRUSTED_CONFIG_PATHS` from the Dockerfile if this is a concern.
 
+### Agent Secrets with fnox
+
+You can give your agent access to secrets via fnox by combining workspace-level configuration with a fnox identity. First, generate an age key for the agent and set `FNOX_AGE_KEY` in the global environment in `clawdbot.json`:
+
+```json
+{
+  "env": {
+    "vars": {
+      "FNOX_AGE_KEY": "AGE-SECRET-KEY-1XXXXXX..."
+    }
+  }
+}
+```
+
+Then create a `fnox.toml` in the agent's workspace with the agent's public key as a recipient:
+
+```toml
+[providers.age]
+type = "age"
+recipients = ["age1..."]  # agent's public key
+
+[secrets]
+MY_API_KEY = { provider = "age", value = "..." }
+```
+
+Combined with a `mise.toml` in the workspace that enables the fnox-env plugin, the agent will have access to both secrets and tools scoped to its workspace:
+
+```toml
+[plugins]
+fnox-env = "https://github.com/jdx/mise-env-fnox"
+
+[env]
+_.fnox-env = {}
+
+[tools]
+ripgrep = "latest"
+```
+
 ## Common Tasks
 
 ### Adding a New Channel
