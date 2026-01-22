@@ -37,7 +37,7 @@ If automatic detection misses changes, run the deployment script directly from t
 
 ```bash
 cd /path/to/clawdbot_railway
-./skills/self-deploy/scripts/deploy-config.sh "Your commit message here"
+./skills/self-configuration/scripts/deploy-config.sh "Your commit message here"
 ```
 
 ## Requirements

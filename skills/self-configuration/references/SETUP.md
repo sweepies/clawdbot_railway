@@ -12,13 +12,13 @@ The self-configuration skill allows clawdbot to:
 ## Skill Location
 
 The skill should be installed in:
-- **Repository**: `<repo>/skills/self-deploy/` (for version control)
-- **Active**: `<agent-workspace>/skills/self-deploy/` (for clawdbot to use)
+- **Repository**: `<repo>/skills/self-configuration/` (for version control)
+- **Active**: `<agent-workspace>/skills/self-configuration/` (for clawdbot to use)
 
 ## Files
 
 ```
-self-deploy/
+self-configuration/
 ├── SKILL.md                 # Skill definition and usage instructions
 ├── references/
 │   └── SETUP.md            # This file - detailed setup and troubleshooting
@@ -54,12 +54,12 @@ The skill monitors for config changes and auto-deploys when detected.
 ### Manual
 ```bash
 cd /path/to/repo
-./skills/self-deploy/scripts/deploy-config.sh "Your commit message"
+./skills/self-configuration/scripts/deploy-config.sh "Your commit message"
 ```
 
 ### Via Clawdbot
 When clawdbot detects config changes, it will:
-1. Load the self-deploy skill
+1. Load the self-configuration skill
 2. Execute the deployment workflow
 3. Report status back
 
@@ -77,7 +77,7 @@ git config user.email "clawdbot@localhost"
 
 ### Age Encryption
 - `age` tool available via `mise use -g age`
-- `AGE_RECIPIENT` set in `.env.public`
+- `CONFIG_KEY` stored in `fnox.toml` (run `fnox set CONFIG_KEY < age-key.txt` to configure)
 - `AGE_KEY` set in Railway environment variables
 
 ## Troubleshooting
@@ -93,7 +93,7 @@ git config user.email "clawdbot@localhost"
 
 ### "Encryption failed"
 - Verify `mise` and `age` are installed
-- Check `.env.public` contains valid `AGE_RECIPIENT`
+- Check `fnox.toml` is configured with `CONFIG_KEY` (`fnox get CONFIG_KEY` should return the age identity)
 - Run `mise run encrypt-config` manually to test
 
 ### Push fails
@@ -117,7 +117,7 @@ git config user.email "clawdbot@localhost"
 
 To enable automatic deployment:
 
-1. Install the skill in `<agent-workspace>/skills/self-deploy/`
+1. Install the skill in `<agent-workspace>/skills/self-configuration/`
 2. Clawdbot will automatically load skills from this directory
 3. When config modifications are detected, the skill triggers
 4. Deployment happens automatically without user intervention
@@ -125,8 +125,8 @@ To enable automatic deployment:
 ## Maintenance
 
 ### Updating the Skill
-1. Edit files in `<repo>/skills/self-deploy/`
-2. Copy changes to `<agent-workspace>/skills/self-deploy/`
+1. Edit files in `<repo>/skills/self-configuration/`
+2. Copy changes to `<agent-workspace>/skills/self-configuration/`
 3. Test deployment workflow
 4. Commit to git for version control
 
