@@ -30,7 +30,7 @@ RUN mise use -g fnox && mise plugin install fnox-env https://github.com/jdx/mise
 
 COPY --from=deps /root/node_modules .
 COPY .bashrc .
-COPY .clawdbot/extensions .
+COPY .clawdbot/extensions extensions
 COPY clawdbot.json.enc .
 COPY start.sh .
 
